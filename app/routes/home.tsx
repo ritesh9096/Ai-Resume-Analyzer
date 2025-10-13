@@ -1,10 +1,9 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 import Navbar from "../components/Navbar";
 import ResumeCard from "~/components/ResumeCard";
 import { resumes } from "../../constants";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { usePuterStore } from "../lib/putur";
 
 export function meta({}: Route.MetaArgs) {
