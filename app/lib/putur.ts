@@ -274,31 +274,77 @@ export const usePuterStore = create<PuterStore>((set, get) => {
         >;
     };
 
-    const feedback = async (path: string, message: string) => {
-        const puter = getPuter();
-        if (!puter) {
-            setError("Puter.js not available");
-            return;
-        }
+    // const feedback = async (path: string, message: string) => {
+    //     const puter = getPuter();
+    //     if (!puter) {
+    //         setError("Puter.js not available");
+    //         return;
+    //     }
 
-        return puter.ai.chat(
-            [
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "file",
-                            puter_path: path,
-                        },
-                        {
-                            type: "text",
-                            text: message,
-                        },
-                    ],
+    //     return puter.ai.chat(
+    //         [
+    //             {
+    //                 role: "user",
+    //                 content: [
+    //                     {
+    //                         type: "file",
+    //                         puter_path: path,
+    //                     },
+    //                     {
+    //                         type: "text",
+    //                         text: message,
+    //                     },
+    //                 ],
+    //             },
+    //         ],
+    //         { model: "gpt-4.1-nano" }
+    //     ) as Promise<AIResponse | undefined>;
+    // };
+
+
+
+
+    const feedback = {
+        message: {
+            content: JSON.stringify({
+                overallScore: 80,
+                ATS: {
+                    score: 75,
+                    tips: [
+                        { type: "good", tip: "Uses keywords", explanation: "Your resume includes relevant job keywords." },
+                        { type: "improve", tip: "Optimize formatting", explanation: "Use standard fonts and clear section headings for better ATS parsing." }
+                    ]
                 },
-            ],
-            { model: "claude-3-7-sonnet" }
-        ) as Promise<AIResponse | undefined>;
+                toneAndStyle: {
+                    score: 85,
+                    tips: [
+                        { type: "good", tip: "Professional tone", explanation: "Text maintains a formal and clear style." },
+                        { type: "improve", tip: "Consistency needed", explanation: "Use consistent tense and voice throughout all sections." }
+                    ]
+                },
+                content: {
+                    score: 78,
+                    tips: [
+                        { type: "good", tip: "Relevant experience", explanation: "Experience entries are directly relevant to the job." },
+                        { type: "improve", tip: "Add quantifiable results", explanation: "Include numbers/data to show your achievements." }
+                    ]
+                },
+                structure: {
+                    score: 82,
+                    tips: [
+                        { type: "good", tip: "Logical sections", explanation: "Resume has clear, well-organized sections." },
+                        { type: "improve", tip: "Use bullets", explanation: "Bullet points improve readability for each job entry." }
+                    ]
+                },
+                skills: {
+                    score: 80,
+                    tips: [
+                        { type: "good", tip: "Broad skill set", explanation: "Technical and soft skills are well represented." },
+                        { type: "improve", tip: "Prioritize relevant skills", explanation: "List skills most relevant to the job at the top." }
+                    ]
+                }
+            })
+        }
     };
 
     const img2txt = async (image: string | File | Blob, testMode?: boolean) => {
@@ -385,8 +431,53 @@ export const usePuterStore = create<PuterStore>((set, get) => {
                 testMode?: boolean,
                 options?: PuterChatOptions
             ) => chat(prompt, imageURL, testMode, options),
-            feedback: (path: string, message: string) => feedback(path, message),
-            img2txt: (image: string | File | Blob, testMode?: boolean) =>
+            feedback: (path: string, message: string) => Promise.resolve({
+                message: {
+                    content: JSON.stringify({
+                        overallScore: 80,
+                        ATS: {
+                            score: 75,
+                            tips: [
+                                { type: "good", tip: "Uses keywords", explanation: "Your resume includes relevant job keywords." },
+                                { type: "improve", tip: "Optimize formatting", explanation: "Use standard fonts and clear section headings for better ATS parsing." }
+                            ],
+                        },
+                        toneAndStyle: {
+                            score: 85,
+                            tips: [
+                                { type: "good", tip: "Professional tone", explanation: "Text maintains a formal and clear style." },
+                                { type: "improve", tip: "Consistency needed", explanation: "Use consistent tense and voice throughout all sections." }
+                            ],
+                        },
+                        content: {
+                            score: 78,
+                            tips: [
+                                { type: "good", tip: "Relevant experience", explanation: "Experience entries are directly relevant to the job." },
+                                { type: "improve", tip: "Add quantifiable results", explanation: "Include numbers/data to show your achievements." }
+                            ],
+                        },
+                        structure: {
+                            score: 82,
+                            tips: [
+                                { type: "good", tip: "Logical sections", explanation: "Resume has clear, well-organized sections." },
+                                { type: "improve", tip: "Use bullets", explanation: "Bullet points improve readability for each job entry." }
+                            ],
+                        },
+                        skills: {
+                            score: 80,
+                            tips: [
+                                { type: "good", tip: "Broad skill set", explanation: "Technical and soft skills are well represented." },
+                                { type: "improve", tip: "Prioritize relevant skills", explanation: "List skills most relevant to the job at the top." }
+                            ],
+                        }
+                    }),
+                },
+                index: 0,
+                logprobs: null,
+                finish_reason: "stop",
+                usage: undefined,
+                via_ai_chat_service: false
+            }), img2txt: (image: string | File | Blob, testMode?: boolean) =>
                 img2txt(image, testMode),
         },
         kv: {
