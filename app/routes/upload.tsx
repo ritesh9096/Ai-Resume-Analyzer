@@ -3,6 +3,8 @@ import Navbar from "~/components/Navbar";
 import FileUploader from "~/components/FileUploader";
 import { usePuterStore } from "~/lib/putur";
 import { convertPdfToImage } from "~/lib/pdf2img";
+import { generateUUID } from "~/lib/utils";
+import { prepareInstructions } from "../../constants";
 
 const upload = () => {
   const { auth, isLoading, fs, ai, kv } = usePuterStore();
@@ -33,6 +35,9 @@ const upload = () => {
 
     if (!uploadFile) return setStatusText("Error : File upload failed");
 
+    console.log(uploadFile);
+    console.log(file)
+
     setStatusText("Converting to image...");
     const imageFile = await convertPdfToImage(file);
     if (!imageFile.file)
@@ -42,6 +47,39 @@ const upload = () => {
     const uploadImage = await fs.upload([imageFile.file]);
 
     if (!uploadImage) return setStatusText("Error : Image upload failed");
+    setStatusText("Preparing for the Data");
+
+    const uuid = generateUUID();
+
+    const data = {
+      id: uuid,
+      resumePath: uploadFile.path,
+      imagePath: uploadImage.path,
+      companyName,
+      jobTitle,
+      jobDescription,
+      feedback: "",
+    };
+
+    await kv.set(`resume-${uuid}`, JSON.stringify(data));
+    setStatusText("Analyzing the resume...");
+
+    const feedback = await ai.feedback(
+      uploadImage.path,
+      prepareInstructions({ jobTitle, jobDescription })
+    );
+
+    if (!feedback) return setStatusText("Error : Feedback generation failed");
+
+    const feedbackData =
+      typeof feedback.message.content === "string"
+        ? feedback.message.content
+        : feedback.message.content[0].text;
+    data.feedback = feedbackData;
+    await kv.set(`resume-${uuid}`, JSON.stringify(data));
+    setStatusText("Resume analyzed successfully");
+    setIsProcessing(false); 
+    console.log(data);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -72,7 +110,7 @@ const upload = () => {
         <div className="page-heading py-16">
           <h1>Smart feedback for your dream job</h1>
           {isProcessing ? (
-            <div>
+            <div> 
               <h2>{statusText}</h2>
               <img src="/images/resume-scan.gif" className="w-full" />
             </div>
